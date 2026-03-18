@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+.markdown-body h1 { @apply text-2xl font-bold mt-6 mb-3; }
+.markdown-body h2 { @apply text-xl font-semibold mt-5 mb-2; }
+.markdown-body h3 { @apply text-lg font-medium mt-4 mb-2; }
+.markdown-body p { @apply mb-3 leading-relaxed; }
+.markdown-body ul { @apply list-disc pl-6 mb-3; }
+.markdown-body ol { @apply list-decimal pl-6 mb-3; }
+.markdown-body li { @apply mb-1; }
+.markdown-body code { @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono; }
+.markdown-body pre { @apply bg-muted p-4 rounded-lg overflow-x-auto mb-3; }
+.markdown-body pre code { @apply bg-transparent p-0; }
+.markdown-body blockquote { @apply border-l-4 border-primary/20 pl-4 italic text-muted-foreground mb-3; }
+.markdown-body table { @apply w-full border-collapse mb-3; }
+.markdown-body th { @apply border border-border px-3 py-2 bg-muted font-medium text-left; }
+.markdown-body td { @apply border border-border px-3 py-2; }
+
+.variable-tag {
+  @apply bg-primary/10 text-primary px-2 py-0.5 rounded text-sm font-mono font-medium;
+}

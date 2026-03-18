@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: maximo-prompt-engineering
+    runtime: node
+    plan: starter
+    buildCommand: npm install && npm run build
+    startCommand: npm run preview
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: VITE_OPENROUTER_API_KEY
+        sync: false
