@@ -51,7 +51,7 @@ export const openrouterApi = {
           messages: params.messages,
           temperature: params.temperature ?? 0.7,
           max_tokens: params.max_tokens ?? 2048,
-          stream: false,
+          stream: params.stream ?? false,
         }),
       });
 

@@ -28,28 +28,28 @@ export function Sidebar({ isOpen, onToggle, onClose }: SidebarProps) {
 
       <aside
         className={cn(
-          'fixed top-0 left-0 z-50 h-full bg-card border-r shadow-sm transition-all duration-300 ease-in-out',
+          'fixed top-0 left-0 z-50 h-full bg-sidebar-bg border-r border-sidebar-accent shadow-sm transition-all duration-300 ease-in-out',
           'md:z-30',
           isOpen ? 'w-64' : 'w-16'
         )}
       >
         <div className="flex h-full flex-col">
-          <div className="flex h-14 items-center justify-between px-4 border-b">
+          <div className="flex h-14 items-center justify-between px-4 border-b border-sidebar-accent">
             {isOpen && (
-              <NavLink to="/" className="flex items-center gap-2 font-bold text-lg" onClick={onClose}>
-                <Zap className="h-5 w-5 text-primary" />
+              <NavLink to="/" className="flex items-center gap-2 font-bold text-lg text-white" onClick={onClose}>
+                <Zap className="h-5 w-5 text-sidebar-primary" />
                 <span className="truncate">Maximo SEO</span>
               </NavLink>
             )}
             {!isOpen && (
               <Button variant="ghost" size="icon" onClick={onToggle} className="mx-auto">
-                <Zap className="h-5 w-5 text-primary" />
+                <Zap className="h-5 w-5 text-sidebar-primary" />
               </Button>
             )}
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden shrink-0"
+              className="md:hidden shrink-0 text-sidebar-foreground"
               onClick={onClose}
             >
               <X className="h-4 w-4" />
@@ -67,8 +67,8 @@ export function Sidebar({ isOpen, onToggle, onClose }: SidebarProps) {
                   cn(
                     'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                     isActive
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                      ? 'bg-sidebar-accent text-sidebar-primary'
+                      : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-primary',
                     !isOpen && 'justify-center px-2'
                   )
                 }
@@ -79,12 +79,12 @@ export function Sidebar({ isOpen, onToggle, onClose }: SidebarProps) {
             ))}
           </nav>
 
-          <div className="border-t p-2 hidden md:block">
+          <div className="border-t border-sidebar-accent p-2 hidden md:block">
             <Button
               variant="ghost"
               size="icon"
               onClick={onToggle}
-              className="w-full"
+              className="w-full text-sidebar-foreground hover:text-sidebar-primary"
             >
               <span className={cn('transition-transform duration-300', isOpen ? 'rotate-180' : '')}>
                 &lsaquo;

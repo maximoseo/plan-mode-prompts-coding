@@ -5,10 +5,11 @@ import { openrouterApi } from '@/lib/api/openrouter';
 import { executionsApi } from '@/lib/api/executions';
 import { estimateTokens, formatTokenCount, formatDuration } from '@/lib/prompt-utils';
 import { useAuth } from '@/hooks/useAuth';
-import type { ConversationMessage, OpenRouterModel, ChatMessage } from '@/types/prompt';
+import { useModelSelection } from '@/hooks/useModelSelection';
+import type { ConversationMessage, ChatMessage } from '@/types/prompt';
+import { ModelSelector } from '@/components/ModelSelector';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,10 +29,7 @@ function formatTimestamp(ts: number): string {
 
 export default function Playground() {
   const { user } = useAuth();
-
-  const [models, setModels] = useState<OpenRouterModel[]>([]);
-  const [modelsLoading, setModelsLoading] = useState(true);
-  const [selectedModel, setSelectedModel] = useState('openai/gpt-4o-mini');
+  const { selectedModel, selectModel, availableModels, isLoading: modelsLoading } = useModelSelection();
 
   const [systemPrompt, setSystemPrompt] = useState('');
   const [systemPromptOpen, setSystemPromptOpen] = useState(false);
@@ -51,21 +49,6 @@ export default function Playground() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-
-  useEffect(() => {
-    openrouterApi.listModels().then(({ data, error: err }) => {
-      if (err) {
-        console.error('Failed to fetch models:', err);
-      } else if (data) {
-        const sorted = [...data].sort((a, b) => a.name.localeCompare(b.name));
-        setModels(sorted);
-        if (sorted.length > 0 && !sorted.find(m => m.id === selectedModel)) {
-          setSelectedModel(sorted[0]?.id ?? selectedModel);
-        }
-      }
-      setModelsLoading(false);
-    });
-  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -208,7 +191,7 @@ export default function Playground() {
     }, 0);
   }, [messages, isStreaming]);
 
-  const selectedModelData = models.find(m => m.id === selectedModel);
+  const selectedModelData = availableModels.find(m => m.id === selectedModel);
 
   return (
     <TooltipProvider>
@@ -260,23 +243,12 @@ export default function Playground() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="sm:col-span-1">
-                <Select value={selectedModel} onValueChange={setSelectedModel} disabled={modelsLoading}>
-                  <SelectTrigger className="w-full text-xs">
-                    <SelectValue placeholder={modelsLoading ? 'Loading models...' : 'Select model'} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {models.map(model => (
-                      <SelectItem key={model.id} value={model.id} className="text-xs">
-                        <span className="flex items-center gap-2">
-                          <span className="font-medium truncate max-w-[200px]">{model.name}</span>
-                          <span className="text-muted-foreground whitespace-nowrap">
-                            {formatTokenCount(model.context_length)} ctx
-                          </span>
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <ModelSelector
+                  selectedModel={selectedModel}
+                  onModelChange={selectModel}
+                  availableModels={availableModels}
+                  isLoading={modelsLoading}
+                />
                 {selectedModelData && (
                   <p className="text-[10px] text-muted-foreground mt-1 truncate">
                     {selectedModelData.id}

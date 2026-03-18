@@ -15,8 +15,9 @@ import {
 import type {
   PromptVariable,
   CreateTemplateInput,
-  OpenRouterModel,
 } from '@/types/prompt';
+import { useModelSelection } from '@/hooks/useModelSelection';
+import { ModelSelector } from '@/components/ModelSelector';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -142,8 +143,8 @@ export default function Builder() {
   const navigate = useNavigate();
   const isNew = !id;
 
-  const [models, setModels] = useState<OpenRouterModel[]>([]);
-  const [modelsLoading, setModelsLoading] = useState(false);
+  const { selectedModel, selectModel, availableModels, isLoading: modelsLoading } = useModelSelection();
+
   const [variables, setVariables] = useState<PromptVariable[]>([]);
   const [previewText, setPreviewText] = useState('');
   const [previewValues, setPreviewValues] = useState<Record<string, string>>({});
@@ -177,15 +178,6 @@ export default function Builder() {
 
   const systemPrompt = watch('system_prompt');
   const userPrompt = watch('user_prompt');
-
-  useEffect(() => {
-    openrouterApi.listModels().then(({ data, error }) => {
-      if (data) setModels(data);
-      if (error) console.error('Failed to load models:', error);
-      setModelsLoading(false);
-    });
-    setModelsLoading(true);
-  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -314,7 +306,7 @@ export default function Builder() {
     const maxTokens = watch('max_tokens');
 
     const { data, error } = await openrouterApi.chatCompletion({
-      model: model || 'openai/gpt-3.5-turbo',
+      model: model || selectedModel,
       messages,
       temperature,
       max_tokens: maxTokens,
@@ -391,7 +383,10 @@ export default function Builder() {
 
   const handleCategoryChange = (val: string) => setValue('category', val);
 
-  const handleModelChange = (val: string) => setValue('model', val);
+  const handleModelChange = (val: string) => {
+    selectModel(val);
+    setValue('model', val);
+  };
 
   if (loading) {
     return (
@@ -484,25 +479,12 @@ export default function Builder() {
 
               <div className="space-y-2">
                 <Label>Model</Label>
-                {modelsLoading ? (
-                  <div className="flex items-center gap-2 h-10 px-3 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Loading models...
-                  </div>
-                ) : (
-                  <Select value={watch('model')} onValueChange={handleModelChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select model" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {models.map((m) => (
-                        <SelectItem key={m.id} value={m.id}>
-                          {m.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                <ModelSelector
+                  selectedModel={watch('model') || selectedModel}
+                  onModelChange={handleModelChange}
+                  availableModels={availableModels}
+                  isLoading={modelsLoading}
+                />
               </div>
 
               <div className="space-y-2">

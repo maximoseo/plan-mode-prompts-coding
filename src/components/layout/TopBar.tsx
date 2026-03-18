@@ -1,6 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { Menu, LogOut } from 'lucide-react';
+import { Menu, LogOut, Sun, Moon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useModelSelection } from '@/hooks/useModelSelection';
+import { ModelSelector } from '@/components/ModelSelector';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -20,17 +23,11 @@ interface TopBarProps {
   onMenuClick: () => void;
 }
 
-const models = [
-  { value: 'openai/gpt-4o', label: 'GPT-4o' },
-  { value: 'openai/gpt-4o-mini', label: 'GPT-4o Mini' },
-  { value: 'anthropic/claude-3.5-sonnet', label: 'Claude 3.5 Sonnet' },
-  { value: 'anthropic/claude-3-haiku', label: 'Claude 3 Haiku' },
-  { value: 'google/gemini-pro-1.5', label: 'Gemini Pro 1.5' },
-];
-
 export function TopBar({ title, onMenuClick }: TopBarProps) {
   const { user, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const { selectedModel, selectModel, availableModels, isLoading } = useModelSelection();
 
   const handleSignOut = async () => {
     await signOut();
@@ -47,27 +44,36 @@ export function TopBar({ title, onMenuClick }: TopBarProps) {
     : user?.email?.[0]?.toUpperCase() ?? 'U';
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b bg-background px-4 md:px-6">
-      <Button variant="ghost" size="icon" onClick={onMenuClick} className="shrink-0">
+    <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b bg-sidebar-bg px-4 md:px-6">
+      <Button variant="ghost" size="icon" onClick={onMenuClick} className="shrink-0 text-sidebar-foreground hover:text-sidebar-primary">
         <Menu className="h-5 w-5" />
       </Button>
 
-      <h1 className="text-lg font-semibold truncate">{title}</h1>
+      <h1 className="text-lg font-semibold truncate text-sidebar-foreground">{title}</h1>
 
       <div className="ml-auto flex items-center gap-3">
-        <select className="hidden sm:block h-9 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-          {models.map((m) => (
-            <option key={m.value} value={m.value}>
-              {m.label}
-            </option>
-          ))}
-        </select>
+        <ModelSelector
+          selectedModel={selectedModel}
+          onModelChange={selectModel}
+          availableModels={availableModels}
+          isLoading={isLoading}
+          compact
+        />
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleTheme}
+          className="text-sidebar-foreground hover:text-sidebar-primary"
+        >
+          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-9 w-9 rounded-full">
               <Avatar className="h-9 w-9">
-                <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+                <AvatarFallback className="text-xs bg-primary/20 text-primary">{initials}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>

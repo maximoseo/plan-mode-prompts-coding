@@ -12,6 +12,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (window.location.hash.includes('access_token')) {
+      return;
+    }
     if (!loading && !isAuthenticated) {
       navigate('/auth');
     }
