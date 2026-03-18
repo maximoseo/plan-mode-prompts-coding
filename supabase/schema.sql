@@ -84,3 +84,68 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER prompt_templates_updated_at
   BEFORE UPDATE ON prompt_templates
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- Websites / Projects
+CREATE TABLE IF NOT EXISTS websites (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  url TEXT,
+  description TEXT,
+  icon TEXT DEFAULT '🌐',
+  color TEXT DEFAULT '#8b5cf6',
+  prompt_count INTEGER NOT NULL DEFAULT 0,
+  last_used_at TIMESTAMPTZ,
+  is_pinned BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_websites_user_id ON websites(user_id);
+CREATE INDEX IF NOT EXISTS idx_websites_pinned ON websites(user_id, is_pinned);
+
+ALTER TABLE websites ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own websites" ON websites FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own websites" ON websites FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own websites" ON websites FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own websites" ON websites FOR DELETE USING (auth.uid() = user_id);
+
+-- Add website_id to prompt_templates
+ALTER TABLE prompt_templates ADD COLUMN IF NOT EXISTS website_id UUID REFERENCES websites(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_prompt_templates_website_id ON prompt_templates(website_id);
+
+-- Add improvement_mode to prompt_templates
+ALTER TABLE prompt_templates ADD COLUMN IF NOT EXISTS improvement_mode TEXT;
+ALTER TABLE prompt_templates ADD COLUMN IF NOT EXISTS original_prompt TEXT;
+
+-- Prompt Improvements (results from improvement/swarm runs)
+CREATE TABLE IF NOT EXISTS prompt_improvements (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  template_id UUID REFERENCES prompt_templates(id) ON DELETE SET NULL,
+  website_id UUID REFERENCES websites(id) ON DELETE SET NULL,
+  original_prompt TEXT NOT NULL,
+  improved_prompt TEXT NOT NULL,
+  mode TEXT NOT NULL DEFAULT 'general',
+  is_swarm BOOLEAN NOT NULL DEFAULT false,
+  swarm_models TEXT[],
+  swarm_roles TEXT[],
+  model TEXT NOT NULL,
+  prompt_tokens INTEGER NOT NULL DEFAULT 0,
+  completion_tokens INTEGER NOT NULL DEFAULT 0,
+  total_tokens INTEGER NOT NULL DEFAULT 0,
+  duration_ms INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_improvements_user_id ON prompt_improvements(user_id);
+CREATE INDEX IF NOT EXISTS idx_improvements_website_id ON prompt_improvements(website_id);
+
+ALTER TABLE prompt_improvements ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own improvements" ON prompt_improvements FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own improvements" ON prompt_improvements FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own improvements" ON prompt_improvements FOR DELETE USING (auth.uid() = user_id);
+
+CREATE TRIGGER websites_updated_at
+  BEFORE UPDATE ON websites
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();

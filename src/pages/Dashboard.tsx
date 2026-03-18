@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Play, List, Activity, Star, Cpu, FileText } from 'lucide-react';
+import { Plus, Play, List, Activity, Star, Cpu, FileText, Sparkles, Zap } from 'lucide-react';
 import { format } from 'date-fns';
 import { templatesApi } from '@/lib/api/templates';
 import { executionsApi } from '@/lib/api/executions';
@@ -9,6 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+
+const quickActions = [
+  { title: 'Improve Prompt', description: 'Enhance any prompt with AI-powered improvements', icon: Sparkles, path: '/improve', color: 'text-purple-500', bg: 'bg-purple-500/10' },
+  { title: 'Swarm Agents', description: '3 AI models improving your prompt simultaneously', icon: Zap, path: '/swarm', color: 'text-amber-500', bg: 'bg-amber-500/10' },
+  { title: 'New Template', description: 'Create a new prompt template from scratch', icon: Plus, path: '/templates/new', color: 'text-blue-500', bg: 'bg-blue-500/10' },
+  { title: 'Open Playground', description: 'Chat and test prompts with different models', icon: Play, path: '/playground', color: 'text-green-500', bg: 'bg-green-500/10' },
+];
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -56,21 +63,9 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
-          <p className="text-muted-foreground">Overview of your prompt engineering workspace</p>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={() => navigate('/templates/new')}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Template
-          </Button>
-          <Button variant="outline" onClick={() => navigate('/playground')}>
-            <Play className="mr-2 h-4 w-4" />
-            Open Playground
-          </Button>
-        </div>
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
+        <p className="text-muted-foreground">Overview of your prompt engineering workspace</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -93,6 +88,27 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      <div>
+        <h3 className="text-sm font-medium text-muted-foreground mb-3">Quick Actions</h3>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {quickActions.map((action) => (
+            <Card
+              key={action.path}
+              className="cursor-pointer hover:border-primary/50 transition-colors group"
+              onClick={() => navigate(action.path)}
+            >
+              <CardContent className="pt-4 pb-4">
+                <div className={`h-10 w-10 rounded-lg ${action.bg} flex items-center justify-center mb-3`}>
+                  <action.icon className={`h-5 w-5 ${action.color}`} />
+                </div>
+                <p className="text-sm font-medium group-hover:text-primary transition-colors">{action.title}</p>
+                <p className="text-xs text-muted-foreground mt-1">{action.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

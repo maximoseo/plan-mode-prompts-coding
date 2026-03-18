@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { List, Puzzle, MessageSquare, Clock, X, Zap } from 'lucide-react';
+import { List, Puzzle, MessageSquare, Clock, X, Zap, Home, Globe, Sparkles, ZapOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -10,6 +10,10 @@ interface SidebarProps {
 }
 
 const navItems = [
+  { to: '/', icon: Home, label: 'Home', end: true },
+  { to: '/websites', icon: Globe, label: 'Websites' },
+  { to: '/improve', icon: Sparkles, label: 'Improve' },
+  { to: '/swarm', icon: ZapOff, label: 'Swarm' },
   { to: '/templates', icon: List, label: 'Templates' },
   { to: '/templates/new', icon: Puzzle, label: 'Builder' },
   { to: '/playground', icon: MessageSquare, label: 'Playground' },
@@ -56,12 +60,12 @@ export function Sidebar({ isOpen, onToggle, onClose }: SidebarProps) {
             </Button>
           </div>
 
-          <nav className="flex-1 py-4 px-2 space-y-1">
-            {navItems.map(({ to, icon: Icon, label }) => (
+          <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
+            {navItems.map(({ to, icon: Icon, label, end }) => (
               <NavLink
                 key={to}
                 to={to}
-                end={to === '/templates'}
+                end={end}
                 onClick={onClose}
                 className={({ isActive }) =>
                   cn(

@@ -22,8 +22,95 @@ export interface PromptTemplate {
   is_favorite: boolean;
   tags: string[];
   version: number;
+  website_id: string | null;
+  improvement_mode: string | null;
+  original_prompt: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface Website {
+  id: string;
+  user_id: string;
+  name: string;
+  url: string | null;
+  description: string | null;
+  icon: string;
+  color: string;
+  prompt_count: number;
+  last_used_at: string | null;
+  is_pinned: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateWebsiteInput {
+  name: string;
+  url?: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+}
+
+export type ImprovementMode = 
+  | 'general'
+  | 'vibe-code'
+  | 'design'
+  | 'n8n'
+  | 'coding'
+  | 'debugging'
+  | 'seo'
+  | 'automation'
+  | 'content'
+  | 'cto-mode'
+  | 'plan-mode'
+  | 'prompt-hardening'
+  | 'multi-agent-coding'
+  | 'architecture-planning'
+  | 'deployment'
+  | 'refactor';
+
+export interface ImprovementPreset {
+  id: ImprovementMode;
+  label: string;
+  icon: string;
+  description: string;
+  systemPrompt: string;
+  category: string;
+}
+
+export interface PromptImprovement {
+  id: string;
+  user_id: string;
+  template_id: string | null;
+  website_id: string | null;
+  original_prompt: string;
+  improved_prompt: string;
+  mode: ImprovementMode;
+  is_swarm: boolean;
+  swarm_models: string[] | null;
+  swarm_roles: string[] | null;
+  model: string;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+  duration_ms: number;
+  created_at: string;
+}
+
+export interface SwarmAgent {
+  model: string;
+  role: string;
+  roleDescription: string;
+}
+
+export interface SwarmResult {
+  agents: {
+    model: string;
+    role: string;
+    response: string;
+  }[];
+  synthesized: string;
 }
 
 export interface PromptExecution {

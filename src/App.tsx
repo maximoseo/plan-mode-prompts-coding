@@ -16,6 +16,9 @@ const Templates = lazy(() => import("./pages/Templates"));
 const Playground = lazy(() => import("./pages/Playground"));
 const Builder = lazy(() => import("./pages/Builder"));
 const History = lazy(() => import("./pages/History"));
+const Websites = lazy(() => import("./pages/Websites"));
+const Improve = lazy(() => import("./pages/Improve"));
+const Swarm = lazy(() => import("./pages/Swarm"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function PageLoader() {
@@ -46,6 +49,9 @@ function App() {
                   </ProtectedRoute>
                 }>
                   <Route path="/" element={<Dashboard />} />
+                  <Route path="/websites" element={<Websites />} />
+                  <Route path="/improve" element={<Improve />} />
+                  <Route path="/swarm" element={<Swarm />} />
                   <Route path="/templates" element={<Templates />} />
                   <Route path="/templates/new" element={<Builder />} />
                   <Route path="/templates/:id" element={<Builder />} />
