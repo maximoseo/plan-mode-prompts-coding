@@ -9,6 +9,7 @@ ENV VITE_OPENROUTER_API_KEY=$VITE_OPENROUTER_API_KEY
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
+RUN true
 COPY . .
 RUN npm run build
 
