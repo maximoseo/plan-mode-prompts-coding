@@ -13,7 +13,7 @@ export function Toaster() {
 
   return (
     <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, variant, duration, ...props }) {
+      {toasts.map(function ({ id, title, description, action, variant, ...props }) {
         const toastVariant = variant === 'success' ? 'default' : variant;
         return (
           <Toast key={id} variant={toastVariant} {...props}>

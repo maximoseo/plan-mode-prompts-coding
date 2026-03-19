@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -62,15 +62,6 @@ export default function Auth() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  if (searchParams.get('mode') === 'reset') {
-    if (mode !== 'reset') setMode('reset');
-  }
-
-  if (isAuthenticated && mode !== 'reset') {
-    navigate('/');
-    return null;
-  }
-
   const signInForm = useForm<SignInForm>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: '', password: '' },
@@ -90,6 +81,18 @@ export default function Auth() {
     resolver: zodResolver(resetSchema),
     defaultValues: { password: '', confirmPassword: '' },
   });
+
+  useEffect(() => {
+    if (searchParams.get('mode') === 'reset') {
+      setMode('reset');
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (isAuthenticated && mode !== 'reset') {
+      navigate('/');
+    }
+  }, [isAuthenticated, mode, navigate]);
 
   const clearMessages = () => {
     setError(null);
