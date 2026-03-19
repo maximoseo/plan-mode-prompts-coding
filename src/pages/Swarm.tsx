@@ -8,7 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectLabel, SelectSeparator } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { runSwarm, type SwarmAgentStatus } from '@/lib/improvement/engine';
@@ -166,15 +166,17 @@ export default function Swarm() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {PRESET_CATEGORIES.map(cat => (
-                      <optgroup key={cat} label={cat}>
+                    {PRESET_CATEGORIES.map((cat, catIndex) => (
+                      <div key={cat}>
+                        {catIndex > 0 && <SelectSeparator />}
+                        <SelectLabel>{cat}</SelectLabel>
                         {IMPROVEMENT_PRESETS.filter(p => p.category === cat).map(p => (
                           <SelectItem key={p.id} value={p.id}>
                             <span className="mr-2">{p.icon}</span>
                             {p.label}
                           </SelectItem>
                         ))}
-                      </optgroup>
+                      </div>
                     ))}
                   </SelectContent>
                 </Select>
