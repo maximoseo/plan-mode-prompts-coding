@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { templatesApi } from '@/lib/api/templates';
 import { openrouterApi } from '@/lib/api/openrouter';
+import { getBuilderNavigationState } from '@/lib/navigation-state';
 import {
   extractVariables,
   fillVariables,
@@ -141,6 +142,7 @@ function PromptEditor({ label, value, onChange, onDetect }: PromptEditorProps) {
 export default function Builder() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const isNew = !id;
 
   const { selectedModel, selectModel, availableModels, isLoading: modelsLoading } = useModelSelection();
@@ -153,12 +155,14 @@ export default function Builder() {
   const [testLoading, setTestLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!isNew);
+  const appliedPrefillKeyRef = useRef<string | null>(null);
 
   const {
     register,
     handleSubmit,
     setValue,
     watch,
+    getValues,
     reset,
     formState: { errors },
   } = useForm<FormData>({
@@ -178,6 +182,10 @@ export default function Builder() {
 
   const systemPrompt = watch('system_prompt');
   const userPrompt = watch('user_prompt');
+  const navigationPrefill = useMemo(
+    () => getBuilderNavigationState(location.state),
+    [location.state],
+  );
 
   useEffect(() => {
     if (!id) return;
@@ -205,6 +213,41 @@ export default function Builder() {
       setLoading(false);
     });
   }, [id, navigate, reset]);
+
+  useEffect(() => {
+    if (!isNew || !navigationPrefill || appliedPrefillKeyRef.current === location.key) {
+      return;
+    }
+
+    const currentValues = getValues();
+
+    reset({
+      ...currentValues,
+      ...(navigationPrefill.title ? { title: navigationPrefill.title } : {}),
+      ...(navigationPrefill.description ? { description: navigationPrefill.description } : {}),
+      ...(navigationPrefill.category ? { category: navigationPrefill.category } : {}),
+      ...(navigationPrefill.tags ? { tags: navigationPrefill.tags } : {}),
+      ...(navigationPrefill.model ? { model: navigationPrefill.model } : {}),
+      ...(navigationPrefill.temperature !== undefined
+        ? { temperature: navigationPrefill.temperature }
+        : {}),
+      ...(navigationPrefill.max_tokens !== undefined
+        ? { max_tokens: navigationPrefill.max_tokens }
+        : {}),
+      ...(navigationPrefill.system_prompt
+        ? { system_prompt: navigationPrefill.system_prompt }
+        : {}),
+      ...((navigationPrefill.user_prompt || navigationPrefill.initialPrompt)
+        ? { user_prompt: navigationPrefill.user_prompt ?? navigationPrefill.initialPrompt ?? '' }
+        : {}),
+    });
+
+    if (navigationPrefill.model) {
+      selectModel(navigationPrefill.model);
+    }
+
+    appliedPrefillKeyRef.current = location.key;
+  }, [getValues, isNew, location.key, navigationPrefill, reset, selectModel]);
 
   const syncVariables = useCallback(
     (text: string) => {

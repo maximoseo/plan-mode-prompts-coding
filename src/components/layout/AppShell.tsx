@@ -5,6 +5,10 @@ import { TopBar } from './TopBar';
 
 const pageTitles: Record<string, string> = {
   '/': 'Dashboard',
+  '/websites': 'Websites',
+  '/ai-coding-generator': 'AI Coding Generator',
+  '/improve': 'Prompt Improvement',
+  '/swarm': 'Swarm Agents',
   '/templates': 'Templates',
   '/templates/new': 'Template Builder',
   '/playground': 'Playground',
@@ -34,7 +38,7 @@ export function AppShell() {
   }, []);
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const sidebarWidth = sidebarOpen && !isMobile ? '16rem' : '4rem';
+  const sidebarWidth = isMobile ? '0' : sidebarOpen ? '16rem' : '4rem';
 
   return (
     <div className="min-h-screen bg-background">

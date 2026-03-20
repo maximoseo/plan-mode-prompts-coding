@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { List, Puzzle, MessageSquare, Clock, X, Zap, Home, Globe, Sparkles, ZapOff } from 'lucide-react';
+import { Code2, List, Puzzle, MessageSquare, Clock, X, Zap, Home, Globe, Sparkles, ZapOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -12,6 +12,7 @@ interface SidebarProps {
 const navItems = [
   { to: '/', icon: Home, label: 'Home', end: true },
   { to: '/websites', icon: Globe, label: 'Websites' },
+  { to: '/ai-coding-generator', icon: Code2, label: 'AI Coding' },
   { to: '/improve', icon: Sparkles, label: 'Improve' },
   { to: '/swarm', icon: ZapOff, label: 'Swarm' },
   { to: '/templates', icon: List, label: 'Templates' },
@@ -33,8 +34,8 @@ export function Sidebar({ isOpen, onToggle, onClose }: SidebarProps) {
       <aside
         className={cn(
           'fixed top-0 left-0 z-50 h-full bg-sidebar-bg border-r border-sidebar-accent shadow-sm transition-all duration-300 ease-in-out',
-          'md:z-30',
-          isOpen ? 'w-64' : 'w-16'
+          'md:z-30 md:translate-x-0',
+          isOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64 md:w-16'
         )}
       >
         <div className="flex h-full flex-col">

@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Play, List, Activity, Star, Cpu, FileText, Sparkles, Zap } from 'lucide-react';
+import { Code2, Plus, Play, List, Activity, Star, Cpu, FileText, Sparkles, Zap } from 'lucide-react';
 import { format } from 'date-fns';
 import { templatesApi } from '@/lib/api/templates';
 import { executionsApi } from '@/lib/api/executions';
@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const quickActions = [
+  { title: 'AI Coding', description: 'Generate coding-focused prompts and jump into the right flow', icon: Code2, path: '/ai-coding-generator', color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
   { title: 'Improve Prompt', description: 'Enhance any prompt with AI-powered improvements', icon: Sparkles, path: '/improve', color: 'text-purple-500', bg: 'bg-purple-500/10' },
   { title: 'Swarm Agents', description: '3 AI models improving your prompt simultaneously', icon: Zap, path: '/swarm', color: 'text-amber-500', bg: 'bg-amber-500/10' },
   { title: 'New Template', description: 'Create a new prompt template from scratch', icon: Plus, path: '/templates/new', color: 'text-blue-500', bg: 'bg-blue-500/10' },
@@ -92,7 +93,7 @@ export default function Dashboard() {
 
       <div>
         <h3 className="text-sm font-medium text-muted-foreground mb-3">Quick Actions</h3>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {quickActions.map((action) => (
             <Card
               key={action.path}

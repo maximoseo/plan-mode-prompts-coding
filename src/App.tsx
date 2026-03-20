@@ -20,6 +20,7 @@ const Websites = lazy(() => import("./pages/Websites"));
 const Improve = lazy(() => import("./pages/Improve"));
 const Swarm = lazy(() => import("./pages/Swarm"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const AICodingGenerator = lazy(() => import("./pages/AICodingGenerator"));
 
 function PageLoader() {
   return (
@@ -50,6 +51,7 @@ function App() {
                 }>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/websites" element={<Websites />} />
+                  <Route path="/ai-coding-generator" element={<AICodingGenerator />} />
                   <Route path="/improve" element={<Improve />} />
                   <Route path="/swarm" element={<Swarm />} />
                   <Route path="/templates" element={<Templates />} />

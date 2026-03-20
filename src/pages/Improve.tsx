@@ -1,16 +1,17 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { Sparkles, Copy, Save, RefreshCw, Check, Loader2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectLabel, SelectSeparator } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, SelectLabel, SelectSeparator } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { improvePrompt } from '@/lib/improvement/engine';
 import { improvementsApi } from '@/lib/api/improvements';
 import { IMPROVEMENT_PRESETS, PRESET_CATEGORIES } from '@/lib/improvement/presets';
+import { getPromptFlowNavigationState } from '@/lib/navigation-state';
 import { useModelSelection } from '@/hooks/useModelSelection';
 import { estimateTokens, formatTokenCount, formatDuration } from '@/lib/prompt-utils';
 import { toast } from 'sonner';
@@ -20,6 +21,7 @@ import rehypeHighlight from 'rehype-highlight';
 
 export default function Improve() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { selectedModel, selectModel, availableModels } = useModelSelection();
 
   const [prompt, setPrompt] = useState('');
@@ -28,6 +30,34 @@ export default function Improve() {
   const [duration, setDuration] = useState<number>(0);
   const [resultTokens, setResultTokens] = useState<number>(0);
   const [copied, setCopied] = useState(false);
+  const [sourceTitle, setSourceTitle] = useState<string | null>(null);
+  const appliedPrefillKeyRef = useRef<string | null>(null);
+
+  const navigationPrefill = useMemo(
+    () => getPromptFlowNavigationState(location.state),
+    [location.state],
+  );
+
+  useEffect(() => {
+    if (!navigationPrefill || appliedPrefillKeyRef.current === location.key) {
+      return;
+    }
+
+    if (navigationPrefill.initialPrompt) {
+      setPrompt(navigationPrefill.initialPrompt);
+    }
+
+    if (navigationPrefill.mode) {
+      setMode(navigationPrefill.mode);
+    }
+
+    if (navigationPrefill.model) {
+      selectModel(navigationPrefill.model);
+    }
+
+    setSourceTitle(navigationPrefill.title ?? null);
+    appliedPrefillKeyRef.current = location.key;
+  }, [location.key, navigationPrefill, selectModel]);
 
   const improveMutation = useMutation({
     mutationFn: async () => {
@@ -58,6 +88,7 @@ export default function Improve() {
   const inputTokens = estimateTokens(prompt);
   const charCount = prompt.length;
   const activePreset = IMPROVEMENT_PRESETS.find(p => p.id === mode);
+  const saveTitle = sourceTitle ? `Improved: ${sourceTitle}` : `Improved: ${mode}`;
 
   async function handleCopy() {
     if (!result) return;
@@ -74,11 +105,11 @@ export default function Improve() {
   function handleSaveAsTemplate() {
     if (!result) return;
     navigate('/templates/new', {
-      state: {
-        title: `Improved: ${mode}`,
-        description: `Prompt improved using ${activePreset?.label || mode} mode`,
-        user_prompt: result,
-        model: selectedModel,
+        state: {
+          title: saveTitle,
+          description: `Prompt improved using ${activePreset?.label || mode} mode`,
+          user_prompt: result,
+          model: selectedModel,
       },
     });
   }
@@ -98,6 +129,9 @@ export default function Improve() {
             <h2 className="text-2xl font-bold tracking-tight">Prompt Improvement</h2>
           </div>
           <p className="text-muted-foreground">Paste a prompt and let AI make it better</p>
+          {sourceTitle && (
+            <p className="text-xs text-muted-foreground mt-2">Starting from: {sourceTitle}</p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="text-xs font-mono">
@@ -134,16 +168,18 @@ export default function Improve() {
                   </SelectTrigger>
                   <SelectContent>
                     {PRESET_CATEGORIES.map((cat, catIndex) => (
-                      <div key={cat}>
+                      <Fragment key={cat}>
                         {catIndex > 0 && <SelectSeparator />}
-                        <SelectLabel>{cat}</SelectLabel>
-                        {IMPROVEMENT_PRESETS.filter(p => p.category === cat).map(p => (
-                          <SelectItem key={p.id} value={p.id}>
-                            <span className="mr-2">{p.icon}</span>
-                            {p.label}
-                          </SelectItem>
-                        ))}
-                      </div>
+                        <SelectGroup>
+                          <SelectLabel>{cat}</SelectLabel>
+                          {IMPROVEMENT_PRESETS.filter(p => p.category === cat).map(p => (
+                            <SelectItem key={p.id} value={p.id}>
+                              <span className="mr-2">{p.icon}</span>
+                              {p.label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </Fragment>
                     ))}
                   </SelectContent>
                 </Select>

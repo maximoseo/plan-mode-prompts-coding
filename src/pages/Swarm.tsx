@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Fragment, useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import {
   Sparkles, Copy, Save, Loader2, ArrowRight, ChevronDown, ChevronUp,
@@ -8,12 +8,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectLabel, SelectSeparator } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, SelectLabel, SelectSeparator } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { runSwarm, type SwarmAgentStatus } from '@/lib/improvement/engine';
 import { IMPROVEMENT_PRESETS, PRESET_CATEGORIES, SWARM_MODELS } from '@/lib/improvement/presets';
 import { improvementsApi } from '@/lib/api/improvements';
+import { getPromptFlowNavigationState } from '@/lib/navigation-state';
 import { estimateTokens, formatTokenCount, formatDuration } from '@/lib/prompt-utils';
 import { toast } from 'sonner';
 import type { ImprovementMode } from '@/types/prompt';
@@ -22,6 +23,7 @@ import rehypeHighlight from 'rehype-highlight';
 
 export default function Swarm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [prompt, setPrompt] = useState('');
   const [mode, setMode] = useState<ImprovementMode>('general');
   const [agents, setAgents] = useState<SwarmAgentStatus[]>([]);
@@ -29,9 +31,34 @@ export default function Swarm() {
   const [totalDuration, setTotalDuration] = useState(0);
   const [copied, setCopied] = useState(false);
   const [expandedAgents, setExpandedAgents] = useState<Set<number>>(new Set());
+  const [sourceTitle, setSourceTitle] = useState<string | null>(null);
+  const appliedPrefillKeyRef = useRef<string | null>(null);
+
+  const navigationPrefill = useMemo(
+    () => getPromptFlowNavigationState(location.state),
+    [location.state],
+  );
+
+  useEffect(() => {
+    if (!navigationPrefill || appliedPrefillKeyRef.current === location.key) {
+      return;
+    }
+
+    if (navigationPrefill.initialPrompt) {
+      setPrompt(navigationPrefill.initialPrompt);
+    }
+
+    if (navigationPrefill.mode) {
+      setMode(navigationPrefill.mode);
+    }
+
+    setSourceTitle(navigationPrefill.title ?? null);
+    appliedPrefillKeyRef.current = location.key;
+  }, [location.key, navigationPrefill]);
 
   const inputTokens = estimateTokens(prompt);
   const isRunning = agents.some(a => a.status === 'running');
+  const saveTitle = sourceTitle ? `Swarm: ${sourceTitle}` : `Swarm: ${mode}`;
 
   const handleAgentUpdate = useCallback((agent: SwarmAgentStatus) => {
     setAgents(prev => {
@@ -95,11 +122,11 @@ export default function Swarm() {
   function handleSaveAsTemplate() {
     if (!synthesized) return;
     navigate('/templates/new', {
-      state: {
-        title: `Swarm: ${mode}`,
-        description: `Prompt improved by 3 AI agents using ${IMPROVEMENT_PRESETS.find(p => p.id === mode)?.label || mode} mode`,
-        user_prompt: synthesized,
-        model: 'anthropic/claude-sonnet-4',
+        state: {
+          title: saveTitle,
+          description: `Prompt improved by 3 AI agents using ${IMPROVEMENT_PRESETS.find(p => p.id === mode)?.label || mode} mode`,
+          user_prompt: synthesized,
+          model: 'anthropic/claude-sonnet-4',
       },
     });
   }
@@ -122,6 +149,9 @@ export default function Swarm() {
             <h2 className="text-2xl font-bold tracking-tight">Swarm Agents</h2>
           </div>
           <p className="text-muted-foreground">3 AI models working together from different angles</p>
+          {sourceTitle && (
+            <p className="text-xs text-muted-foreground mt-2">Starting from: {sourceTitle}</p>
+          )}
         </div>
       </div>
 
@@ -167,16 +197,18 @@ export default function Swarm() {
                   </SelectTrigger>
                   <SelectContent>
                     {PRESET_CATEGORIES.map((cat, catIndex) => (
-                      <div key={cat}>
+                      <Fragment key={cat}>
                         {catIndex > 0 && <SelectSeparator />}
-                        <SelectLabel>{cat}</SelectLabel>
-                        {IMPROVEMENT_PRESETS.filter(p => p.category === cat).map(p => (
-                          <SelectItem key={p.id} value={p.id}>
-                            <span className="mr-2">{p.icon}</span>
-                            {p.label}
-                          </SelectItem>
-                        ))}
-                      </div>
+                        <SelectGroup>
+                          <SelectLabel>{cat}</SelectLabel>
+                          {IMPROVEMENT_PRESETS.filter(p => p.category === cat).map(p => (
+                            <SelectItem key={p.id} value={p.id}>
+                              <span className="mr-2">{p.icon}</span>
+                              {p.label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </Fragment>
                     ))}
                   </SelectContent>
                 </Select>
