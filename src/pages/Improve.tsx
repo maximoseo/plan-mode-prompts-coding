@@ -78,7 +78,7 @@ export default function Improve() {
         completion_tokens: res.completionTokens,
         total_tokens: res.totalTokens,
         duration_ms: res.durationMs,
-      }).catch(console.error);
+      }).catch(() => {});
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : 'Failed to improve prompt');

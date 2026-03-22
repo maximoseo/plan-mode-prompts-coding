@@ -100,7 +100,7 @@ export default function Swarm() {
         completion_tokens: 0,
         total_tokens: 0,
         duration_ms: result.totalDurationMs,
-      }).catch(console.error);
+      }).catch(() => {});
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : 'Swarm failed');

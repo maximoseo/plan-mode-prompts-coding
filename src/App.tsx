@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppShell } from "@/components/layout/AppShell";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Loader2 } from "lucide-react";
 
 const Auth = lazy(() => import("./pages/Auth"));
@@ -34,6 +35,7 @@ const queryClient = new QueryClient();
 
 function App() {
   return (
+    <ErrorBoundary>
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
@@ -67,6 +69,7 @@ function App() {
         </TooltipProvider>
       </QueryClientProvider>
     </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -6,6 +6,7 @@ import { executionsApi } from '@/lib/api/executions';
 import { estimateTokens, formatTokenCount, formatDuration } from '@/lib/prompt-utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useModelSelection } from '@/hooks/useModelSelection';
+import { toast } from 'sonner';
 import type { ConversationMessage, ChatMessage } from '@/types/prompt';
 import { ModelSelector } from '@/components/ModelSelector';
 import { Button } from '@/components/ui/button';
@@ -131,7 +132,7 @@ export default function Playground() {
             total_tokens: _usage.total_tokens,
             duration_ms: durationMs,
             status: 'success',
-          }).catch(console.error);
+          }).catch(() => {});
         }
 
         inputRef.current?.focus();
@@ -167,7 +168,7 @@ export default function Playground() {
       setCopiedId(messageId);
       setTimeout(() => setCopiedId(null), 2000);
     } catch {
-      console.error('Failed to copy');
+      toast.error('Failed to copy');
     }
   }, []);
 
